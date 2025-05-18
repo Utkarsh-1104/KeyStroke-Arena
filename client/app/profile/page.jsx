@@ -99,6 +99,9 @@ export default function ProfilePage() {
             <Link href="/test" className="hover:text-green-400 transition-colors">
               Take Test
             </Link>
+            <Link href="/search" className="hover:text-green-400 transition-colors">
+              Search Users
+            </Link>
             <button
               onClick={handleLogout}
               className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md transition-colors"
@@ -149,7 +152,21 @@ export default function ProfilePage() {
 
         {/* Test history */}
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6">Test History</h2>
+          <div className="flex items-center justify-between my-6">
+            <h2 className="text-2xl font-bold">Test History</h2>
+            <div>
+              {testHistory.length > 0 && (
+                <div className="text-center">
+                  <Link
+                    href="/test"
+                    className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors inline-block"
+                    >
+                    Take Another Test
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
 
           {testHistory.length === 0 ? (
             <div className="bg-gray-800 rounded-lg p-8 text-center">
@@ -215,16 +232,7 @@ export default function ProfilePage() {
             </div>
           )}
 
-          {testHistory.length > 0 && (
-            <div className="mt-6 text-center">
-              <Link
-                href="/test"
-                className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors inline-block"
-              >
-                Take Another Test
-              </Link>
-            </div>
-          )}
+          
         </div>
       </div>
     </div>
