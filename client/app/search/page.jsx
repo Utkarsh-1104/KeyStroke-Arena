@@ -1,14 +1,21 @@
 'use client'
 
 import axios from 'axios'
-import { KeyboardIcon, User } from 'lucide-react'
+import { KeyboardIcon, MailIcon, User } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const SearchUsers = () => {
 
     const [username, setUsername] = React.useState("")
     const [userList, setUserList] = React.useState([])
+    const [currentUser, setCurrentUser] = React.useState(null)
+
+    // const user = JSON.parse(localStorage.getItem("user"))
+    // setCurrentUser(user)
+
+    const router = useRouter()
 
     React.useEffect(() => {
         async function fetchUsers() {
@@ -32,12 +39,20 @@ const SearchUsers = () => {
             setUserList([])
         }
     }, [username])
+    
+    // const filterUsers = (userList) => {
+    //     return userList.filter(user => user.username !== currentUser.username)
+    // }
 
+    // const filteredUsers = filterUsers(userList)
+    // setUserList(filteredUsers)
+    
     const handleLogout = () => {
         localStorage.removeItem("token")
         localStorage.removeItem("user")
         router.push("/")
     }
+
     return (
     <div className='min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white'>
         <nav className="container mx-auto px-6 py-4">
@@ -93,17 +108,22 @@ const SearchUsers = () => {
                         {userList.map((user) => (
                         <tr key={user._id} className="hover:bg-gray-700">
                             <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                                <User className="h-4 w-4 text-gray-400 mr-2" />
-                                <span>{user.username}</span>
-                            </div>
+                                <div className="flex items-center">
+                                    <User className="h-5 w-5 text-gray-400 mr-2" />
+                                    <span>{user.username}</span>
+                                </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-green-400 font-medium">{user.email}</span>
+                                <div className='flex items-center'>
+                                    <MailIcon className="h-5 w-5 text-gray-400 mr-2" />
+                                    <span className="text-green-400 font-medium">{user.email}</span>
+                                </div>
                             </td>
 
                             <td className="py-4 flex items-center justify-center whitespace-nowrap">
-                                <button className='bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors cursor-pointer'>Visit Profile</button>
+                                <Link href={`/visitprofile/?userId=${user._id}&username=${user.username}`} className='bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors cursor-pointer'>
+                                    Visit Profile
+                                </Link>
                             </td>
                         </tr>
                         ))}

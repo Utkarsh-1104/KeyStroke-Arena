@@ -1,13 +1,16 @@
-"use client"
+'use client'
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { KeyboardIcon, TrendingUpIcon, BarChart2Icon, CalendarIcon, CheckCircleIcon } from "lucide-react"
 import axios from "axios"
 
-export default function ProfilePage() {
-  const [currentUser, setCurrentUser] = useState(null)
+export default function VisitProfile() {
+  const searchParams = useSearchParams()
+  const userId = searchParams.get("userId")
+  const username = searchParams.get("username")
+
   const [testHistory, setTestHistory] = useState(null)
   const [averageWpm, setAverageWpm] = useState(0)
   const [averageAccuracy, setAverageAccuracy] = useState(0)
@@ -16,18 +19,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     // Check if user is logged in
-    const user = JSON.parse(localStorage.getItem("user"))
-    if (!user) {
-      router.push("/login")
-      return
-    }
-
-    setCurrentUser(user)
 
     async function fetchTestResults(id) {
 
-      const res = await axios.post("http://localhost:4000/getresults", {
-        userId: id,
+      const res = await axios.get(`http://localhost:4000/getvisitprofile/${id}`, {
       }, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -57,10 +52,10 @@ export default function ProfilePage() {
       }
     }
       
-    fetchTestResults(user._id)
+    fetchTestResults(userId)
 
     // Get test history and sort by date (newest first)
-  }, [router])
+  }, [router, userId])
 
   // Format date
   const formatDate = (dateString) => {
@@ -81,7 +76,7 @@ export default function ProfilePage() {
     router.push("/")
   }
 
-  if (!testHistory || !currentUser) {
+  if (!testHistory) {
     return <div className="min-h-screen bg-gray-900 flex items-center justify-center">Loading...</div>
   }
 
@@ -102,6 +97,9 @@ export default function ProfilePage() {
             <Link href="/search" className="hover:text-green-400 transition-colors">
               Search Users
             </Link>
+            <Link href="/profile" className="hover:text-green-400 transition-colors">
+              Profile
+            </Link>
             <button
               onClick={handleLogout}
               className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-md transition-colors"
@@ -115,13 +113,12 @@ export default function ProfilePage() {
       <div className="container mx-auto px-6 py-8">
         {/* User profile header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">{currentUser.username}'s Profile</h1>
-          <p className="text-gray-300">{currentUser.email}</p>
+          <h1 className="text-3xl font-bold mb-2">{username}'s Profile</h1>
         </div>
 
         {/* Stats overview */}
         <div className="max-w-4xl mx-auto mb-10">
-          <h2 className="text-2xl font-bold mb-6">Your Statistics</h2>
+          <h2 className="text-2xl font-bold mb-6">Statistics</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-gray-800 rounded-lg p-6 flex flex-col items-center">
@@ -154,29 +151,11 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between my-6">
             <h2 className="text-2xl font-bold">Test History</h2>
-            <div>
-              {testHistory.length > 0 && (
-                <div className="text-center">
-                  <Link
-                    href="/test"
-                    className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors inline-block"
-                    >
-                    Take Another Test
-                  </Link>
-                </div>
-              )}
-            </div>
           </div>
 
           {testHistory.length === 0 ? (
             <div className="bg-gray-800 rounded-lg p-8 text-center">
-              <p className="text-gray-300 mb-4">You haven't taken any tests yet.</p>
-              <Link
-                href="/test"
-                className="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-6 rounded-md transition-colors inline-block"
-              >
-                Take Your First Test
-              </Link>
+              <p className="text-gray-300 mb-4">{username} haven't taken any tests yet.</p>
             </div>
           ) : (
             <div className="bg-gray-800 rounded-lg overflow-hidden">
@@ -231,10 +210,9 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-
-          
         </div>
       </div>
     </div>
   )
 }
+
