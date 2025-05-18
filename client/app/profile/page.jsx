@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { KeyboardIcon, TrendingUpIcon, BarChart2Icon, CalendarIcon, CheckCircleIcon } from "lucide-react"
+import axios from "axios"
 
 export default function ProfilePage() {
   const [currentUser, setCurrentUser] = useState(null)
@@ -23,21 +24,42 @@ export default function ProfilePage() {
 
     setCurrentUser(user)
 
-    // Get test history and sort by date (newest first)
-    const history = user.testHistory || []
-    const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))
-    setTestHistory(sortedHistory)
+    async function fetchTestResults(id) {
 
-    // Calculate statistics
-    if (history.length > 0) {
-      const totalWpm = history.reduce((sum, test) => sum + test.wpm, 0)
-      const totalAccuracy = history.reduce((sum, test) => sum + test.accuracy, 0)
-      const highestWpm = Math.max(...history.map((test) => test.wpm))
+      const res = await axios.post("http://localhost:4000/getresults", {
+        userId: id,
+      }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
 
-      setAverageWpm(Math.round(totalWpm / history.length))
-      setAverageAccuracy(Math.round(totalAccuracy / history.length))
-      setBestWpm(highestWpm)
+      if (res.data.status === 200) {
+        const results = res.data.results
+        setTestHistory(results)
+      } else {
+        alert("Error fetching test results:")
+      }
+
+      const history = res.data.results || []
+      const sortedHistory = [...history].sort((a, b) => new Date(b.date) - new Date(a.date))
+      setTestHistory(sortedHistory)
+  
+      // Calculate statistics
+      if (history.length > 0) {
+        const totalWpm = history.reduce((sum, test) => sum + test.wpm, 0)
+        const totalAccuracy = history.reduce((sum, test) => sum + test.accuracy, 0)
+        const highestWpm = Math.max(...history.map((test) => test.wpm))
+  
+        setAverageWpm(Math.round(totalWpm / history.length))
+        setAverageAccuracy(Math.round(totalAccuracy / history.length))
+        setBestWpm(highestWpm)
+      }
     }
+      
+    fetchTestResults(user._id)
+
+    // Get test history and sort by date (newest first)
   }, [router])
 
   // Format date
@@ -54,13 +76,12 @@ export default function ProfilePage() {
 
   // Logout function
   const handleLogout = () => {
-    localStorage.removeItem("currentUser")
     localStorage.removeItem("token")
-    localStorage.removeItem("users")
+    localStorage.removeItem("user")
     router.push("/")
   }
 
-  if (!currentUser) {
+  if (!testHistory || !currentUser) {
     return <div className="min-h-screen bg-gray-900 flex items-center justify-center">Loading...</div>
   }
 
@@ -162,7 +183,7 @@ export default function ProfilePage() {
                   </thead>
                   <tbody className="divide-y divide-gray-700">
                     {testHistory.map((test) => (
-                      <tr key={test.id} className="hover:bg-gray-700">
+                      <tr key={test._id} className="hover:bg-gray-700">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <CalendarIcon className="h-4 w-4 text-gray-400 mr-2" />
@@ -185,7 +206,7 @@ export default function ProfilePage() {
                             {test.accuracy}%
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">{test.duration}s</td>
+                        <td className="px-6 py-4 whitespace-nowrap">30 s</td>
                       </tr>
                     ))}
                   </tbody>

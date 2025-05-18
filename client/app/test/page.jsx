@@ -222,7 +222,7 @@ export default function TestPage() {
 
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {currentUser.username} !</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome, {currentUser.username}!</h1>
           <p className="text-gray-300">Ready to test your typing skills?</p>
         </div>
 
